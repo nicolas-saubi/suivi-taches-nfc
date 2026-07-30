@@ -1,27 +1,113 @@
-import { pgTable, serial, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { AdapterAccountType } from "next-auth/adapters";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
+// ==========================================
+// 1. DOMAINE MÉTIER (Notre application)
+// ==========================================
+
+export const households = pgTable("households", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  inviteCode: text("invite_code").notNull().unique(),
 });
 
 export const chores = pgTable("chores", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
   frequencyDays: integer("frequency_days").notNull(),
-  nfcTagId: varchar("nfc_tag_id", { length: 255 }).unique(),
+  nfcTagId: text("nfc_tag_id").unique(),
+  householdId: text("household_id")
+    .notNull()
+    .references(() => households.id, { onDelete: "cascade" }),
 });
 
 export const choreLogs = pgTable("chore_logs", {
-  id: serial("id").primaryKey(),
-  choreId: integer("chore_id").references(() => chores.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  completedAt: timestamp("completed_at").defaultNow().notNull(),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  choreId: text("chore_id")
+    .notNull()
+    .references(() => chores.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const choresRelations = relations(chores, ({ many }) => ({
+// ==========================================
+// 2. NEXTAUTH & EXTENSION UTILISATEUR
+// ==========================================
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name"),
+  email: text("email").unique(),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  image: text("image"),
+  
+  // -- Champs spécifiques à notre logique métier --
+  householdId: text("household_id").references(() => households.id, { onDelete: "set null" }), // Nullable pour le "Workspace Onboarding"
+  isGuest: boolean("is_guest").default(false).notNull(),
+  gender: text("gender"),
+});
+
+export const accounts = pgTable(
+  "accounts",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccountType>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compoundKey: primaryKey({ columns: [account.provider, account.providerAccountId] }),
+  })
+);
+
+export const sessions = pgTable("sessions", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
+export const verificationTokens = pgTable(
+  "verificationToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  })
+);
+
+// ==========================================
+// 3. DÉFINITION DES RELATIONS (Pour l'API query Drizzle)
+// ==========================================
+
+export const householdsRelations = relations(households, ({ many }) => ({
+  users: many(users),
+  chores: many(chores),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  household: one(households, { fields: [users.householdId], references: [households.id] }),
+  choreLogs: many(choreLogs),
+}));
+
+export const choresRelations = relations(chores, ({ one, many }) => ({
+  household: one(households, { fields: [chores.householdId], references: [households.id] }),
   logs: many(choreLogs),
 }));
 
