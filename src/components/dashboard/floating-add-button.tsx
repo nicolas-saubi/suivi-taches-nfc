@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { Plus, Loader2 } from 'lucide-react';
 import addTaskAction from './actions';
 
@@ -24,9 +25,12 @@ const SUGGESTIONS = [
   { emoji: "🛏️", name: "Draps", points: 30, duration: "7j" },
 ];
 
+const DURATION_OPTIONS = ["1h", "3h", "7h", "1j", "3j", "7j", "14j", "30j", "Autre"];
+
 export default function FloatingAddButton() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(false);
   const [state, formAction, isPending] = useActionState(addTaskAction, null);
+  const [customDuration, setCustomDuration] = useState("");
 
   const [taskName, setTaskName] = useState("");
   const [emoji, setEmoji] = useState("📝"); // Emoji par défaut
@@ -123,6 +127,78 @@ export default function FloatingAddButton() {
                 <input type="hidden" name="points" value={points} />
                 <input type="hidden" name="duration" value={duration} />
               </div>
+            </div>
+
+            {/* BLOC 3 : Curseur de Points */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="points-slider" className="text-sm font-semibold text-zinc-700">
+                  Points
+                </Label>
+                {/* Affichage dynamique de la valeur choisie */}
+                <span className="text-lg font-bold text-amber-500 bg-amber-50 px-3 py-1 rounded-xl">
+                  {points} pts
+                </span>
+              </div>
+
+              <Slider
+                id="points-slider"
+                name="points" // Permet l'envoi natif via formAction !
+                min={10}
+                max={100}
+                step={10}
+                value={[points]} // Shadcn attend un tableau pour la valeur
+                onValueChange={(val) => setPoints(val[0])} // Met à jour le State quand on glisse
+                className="w-full py-2"
+              />
+              <div className="flex justify-between text-xs text-zinc-400 font-medium px-1">
+                <span>10</span>
+                <span>100</span>
+              </div>
+            </div>
+
+            {/* BLOC 4 : Sélecteur de Durée / Récurrence */}
+            <div className="space-y-3 pt-2">
+              <Label className="text-sm font-semibold text-zinc-700">
+                Récurrence (Délai avant réapparition)
+              </Label>
+
+              {/* Le conteneur défilant horizontalement (swipe sur mobile) */}
+              <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+                {DURATION_OPTIONS.map((d) => (
+                  <Button
+                    key={d}
+                    type="button"
+                    variant={duration === d ? "default" : "outline"}
+                    className={`shrink-0 rounded-full h-10 px-4 ${duration === d
+                        ? "bg-zinc-900 text-white"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-600"
+                      }`}
+                    onClick={() => setDuration(d)}
+                  >
+                    {d}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Champ texte conditionnel si "Autre" est sélectionné */}
+              {duration === "Autre" && (
+                <Input
+                  type="text"
+                  placeholder="Ex: 2 mois, 5h..."
+                  value={customDuration}
+                  onChange={(e) => setCustomDuration(e.target.value)}
+                  className="h-12 rounded-xl bg-zinc-50 mt-2"
+                  required
+                />
+              )}
+
+              {/* Le fameux champ caché pour envoyer la valeur finale au serveur ! */}
+              <input
+                type="hidden"
+                name="duration"
+                value={duration === "Autre" ? customDuration : duration}
+              />
             </div>
 
             {/* Affichage de l'erreur éventuelle */}
