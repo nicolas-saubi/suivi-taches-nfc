@@ -19,7 +19,7 @@ export default async function createHousehold(formData: FormData) {
   if (!name || name.trim() === "" || !userId) return;
 
   // A. Création du foyer dans la table households
-  const [newHousehold] = await db.insert(chores).values({
+  const [newHousehold] = await db.insert(households).values({
     name: name.trim(),
   }).returning({ id: households.id });
 
