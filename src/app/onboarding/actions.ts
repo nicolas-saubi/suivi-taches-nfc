@@ -6,20 +6,20 @@ import { redirect } from "next/navigation";
 
 export default async function createHousehold(formData: FormData) {
   "use server";
-  
+
   const session = await auth();
   const userId = session?.user?.id;
 
-  if(!userId) {
+  if (!userId) {
     throw new Error("Utilisateur non authentifié.");
   }
-  
+
   const name = formData.get("name") as string;
 
   if (!name || name.trim() === "" || !userId) return;
 
   // A. Création du foyer dans la table households
-  const [newHousehold] = await db.insert(households).values({
+  const [newHousehold] = await db.insert(chores).values({
     name: name.trim(),
   }).returning({ id: households.id });
 

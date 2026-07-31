@@ -1,7 +1,7 @@
 import Podium from "@/components/dashboard/podium";
 // import { UrgentTasks } from "@/components/dashboard/urgent-tasks";
 // import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { FloatingAddButton } from "@/components/dashboard/floating-add-button";
+import FloatingAddButton from "@/components/dashboard/floating-add-button";
 
 export default function DashboardPage() {
   return (
