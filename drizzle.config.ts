@@ -2,7 +2,7 @@ import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
 
 // Charge les variables depuis .env.development.local pour le CLI
-dotenv.config({ path: '.env.development.local' });
+dotenv.config({ path: '.env.local' });
 
 export default defineConfig({
   schema: './src/db/schema.ts', // Chemin vers ton fichier de schéma

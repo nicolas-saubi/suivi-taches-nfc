@@ -9,7 +9,7 @@ import type { AdapterAccountType } from "next-auth/adapters";
 export const households = pgTable("households", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
-  inviteCode: text("invite_code").notNull().unique(),
+  inviteCode: text("invite_code").$defaultFn(() => crypto.randomUUID()),
 });
 
 export const chores = pgTable("chores", {
@@ -48,6 +48,7 @@ export const users = pgTable("users", {
   householdId: text("household_id").references(() => households.id, { onDelete: "set null" }), // Nullable pour le "Workspace Onboarding"
   isGuest: boolean("is_guest").default(false).notNull(),
   gender: text("gender"),
+  points: integer("points").default(0).notNull(),
 });
 
 export const accounts = pgTable(
