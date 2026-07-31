@@ -25,7 +25,7 @@ const SUGGESTIONS = [
   { emoji: "🛏️", name: "Draps", points: 30, duration: "7j" },
 ];
 
-const DURATION_OPTIONS = ["1h", "3h", "7h", "1j", "3j", "7j", "14j", "30j", "Autre"];
+const DURATION_OPTIONS = ["3h", "1j", "3j", "7j", "Autre"];
 
 export default function FloatingAddButton() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(false);
@@ -157,20 +157,20 @@ export default function FloatingAddButton() {
               </div>
             </div>
 
-            {/* BLOC 4 : Sélecteur de Durée / Récurrence */}
+            {/* BLOC 4 : Sélecteur de Durée / Récurrence (Sans scroll) */}
             <div className="space-y-3 pt-2">
               <Label className="text-sm font-semibold text-zinc-700">
                 Récurrence (Délai avant réapparition)
               </Label>
 
-              {/* Le conteneur défilant horizontalement (swipe sur mobile) */}
-              <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+              {/* Conteneur fixe, répartition égale sur toute la largeur */}
+              <div className="flex gap-2">
                 {DURATION_OPTIONS.map((d) => (
                   <Button
                     key={d}
                     type="button"
                     variant={duration === d ? "default" : "outline"}
-                    className={`shrink-0 rounded-full h-10 px-4 ${duration === d
+                    className={`flex-1 rounded-xl h-10 px-2 text-xs sm:text-sm font-medium ${duration === d
                         ? "bg-zinc-900 text-white"
                         : "bg-zinc-50 border-zinc-200 text-zinc-600"
                       }`}
@@ -185,7 +185,7 @@ export default function FloatingAddButton() {
               {duration === "Autre" && (
                 <Input
                   type="text"
-                  placeholder="Ex: 2 mois, 5h..."
+                  placeholder="Ex: 12h, 2 jours..."
                   value={customDuration}
                   onChange={(e) => setCustomDuration(e.target.value)}
                   className="h-12 rounded-xl bg-zinc-50 mt-2"
@@ -193,7 +193,7 @@ export default function FloatingAddButton() {
                 />
               )}
 
-              {/* Le fameux champ caché pour envoyer la valeur finale au serveur ! */}
+              {/* Champ caché pour envoyer la valeur finale */}
               <input
                 type="hidden"
                 name="duration"
