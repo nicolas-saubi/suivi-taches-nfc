@@ -17,6 +17,13 @@ import { Slider } from '@/components/ui/slider';
 import { Plus, Loader2 } from 'lucide-react';
 import addTaskAction from './actions';
 
+interface TaskSuggestion {
+  emoji: string;
+  name: string;
+  points: number;
+  duration: string;
+}
+
 // 1. Nos suggestions rapides avec leurs valeurs par défaut
 const SUGGESTIONS = [
   { emoji: "🍽️", name: "Lave-vaisselle", points: 10, duration: "3h" },
@@ -38,7 +45,7 @@ export default function FloatingAddButton() {
   const [duration, setDuration] = useState("1j");
 
   // Fonction pour appliquer une suggestion
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = (suggestion: TaskSuggestion) => {
     setTaskName(suggestion.name);
     setEmoji(suggestion.emoji);
     setPoints(suggestion.points);
@@ -171,8 +178,8 @@ export default function FloatingAddButton() {
                     type="button"
                     variant={duration === d ? "default" : "outline"}
                     className={`flex-1 rounded-xl h-10 px-2 text-xs sm:text-sm font-medium ${duration === d
-                        ? "bg-zinc-900 text-white"
-                        : "bg-zinc-50 border-zinc-200 text-zinc-600"
+                      ? "bg-zinc-900 text-white"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-600"
                       }`}
                     onClick={() => setDuration(d)}
                   >
