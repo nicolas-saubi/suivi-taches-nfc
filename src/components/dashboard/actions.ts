@@ -11,6 +11,10 @@ export default async function addTaskAction(prevState: any, formData: FormData) 
     throw new Error("User not authenticated");
   }
 
+  if (!session?.user?.householdId) {
+    throw new Error("Vous devez appartenir à un foyer pour ajouter une tâche");
+  }
+
   const taskName = formData.get("taskName") as string;
   if (!taskName || taskName.trim() === "") {
     return { error: "Le nom de la tâche est obligatoire." };
